@@ -4,5 +4,5 @@
 * Triangle-ray intersection calculation
 * Baseline
 
-## Renderer v2 features:
+## Renderer v1.1 features:
 * Got fully optimised
