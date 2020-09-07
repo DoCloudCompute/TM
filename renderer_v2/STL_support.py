@@ -1,6 +1,7 @@
 from time import time
 import numpy as np
 from PIL import Image
+import struct
 
 """
 Chapter 0: setting up vars and output
@@ -17,27 +18,58 @@ if pixels_x % 2 != 0 or pixels_y % 2 != 0:
     exit(1)
 
 # output
-res_image = np.zeros((pixels_y,pixels_x,3), dtype=np.uint8)
+res_image = np.zeros((pixels_y, pixels_x, 3), dtype=np.uint8)
 
 """
 Chapter 1: Setting Up Triangles
 
+First and foremost, read STL files and get triangle verts ( https://en.wikipedia.org/wiki/STL_(file_format) )
+Triangle verts (A,B,C) are 3D vectors
 In here, the triangle vertices coordinates get converted to vectorial form (A,B,C -> A+u.E1+v.E2).
 """
 
-# triangle verts (A,B,C) are 3D vectors
+triangles = []
 
-# the triangle vertices go here (A,B,C)
+stl = open("mesh.stl", "rb")
+stl_header = stl.read(80)
+stl_n_tri = stl.read(4)
+stl_n_tri = int.from_bytes(stl_n_tri, byteorder="little")
+
+
+for face in range(0, stl_n_tri):
+    stl_vals = []
+    for i in range(0,12):
+        val_bytes = stl.read(4)
+        val = float(struct.unpack('<f', val_bytes)[0])
+        stl_vals.append(val)
+
+    normal = (stl_vals[0],
+              stl_vals[1],
+              stl_vals[2])
+
+    A = (stl_vals[3],
+         stl_vals[4],
+         stl_vals[5])
+
+    B = (stl_vals[6],
+         stl_vals[7],
+         stl_vals[8])
+
+    C = (stl_vals[9],
+         stl_vals[10],
+         stl_vals[11])
+
+    tri_verts = [A, B, C]
+    triangles.append(tri_verts)
+
+    stl.read(2)
+
 # in the shape of:
 """
 triangles = [
             [(Ax, Ay, Az), (Bx, By, Bz), (Cx, Cy, Cz)] # that is one triangle
             ]
 """
-triangles = [
-            [(2,0,-1), (3,1,1), (2,-1,1)],
-            [(2,2,-1), (3,3,1), (2,1,1)],
-            ]
 
 # triangle vectors (A+u.E1+v.E2)
 # in the shape of:
@@ -78,7 +110,7 @@ of vertical pixels to get the angle variation per ray vertically. The expression
 """
 
 # ray origin is a point in space (Ox, Oy, Oz) represented by a tuple
-ray_origin = (0,0,0)
+ray_origin = (-2,0,0)
 
 # directional vector is a list of tuples: (Mx, My, Mz)
 mid_pix_x = int(pixels_x / 2)
@@ -119,6 +151,8 @@ To simplify, O - A is going to be abbreviated to d.
 
 """
 
+print("Started RTX")
+
 UV_intersects = []
 startt = time()
 
@@ -150,14 +184,12 @@ for ray in ray_directions:
     pic_coords = (pixels_x-ray[1]-mid_pix_x-1,
                   pixels_y-ray[2]-mid_pix_y-1)
 
-    if u and v: res_image[pic_coords[1],pic_coords[0]] = [255,u*255,v*255]
-    UV_intersects.append((u,v))
+    if u and v: res_image[pic_coords[1], pic_coords[0]] = [255, u*255, v*255]
+    UV_intersects.append((u, v))
 
 endt = time()-startt
 print(endt)
 print("{:,} rays per second".format(int(len(UV_intersects)/(endt))))
-
-
 
 res_image = Image.fromarray(res_image)
 res_image.show()
