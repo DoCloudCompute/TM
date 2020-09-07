@@ -1,6 +1,7 @@
 from time import time
 import numpy as np
 from PIL import Image
+import cv2
 import struct
 
 """
@@ -8,10 +9,10 @@ Chapter 0: setting up vars and output
 """
 
 # input
-pixels_x = 1280
-pixels_y = 720
+pixels_x = int(1280/1)
+pixels_y = int(720/1)
 num_triangles = int(1)
-fov = 300
+fov = int(300/1)
 
 if pixels_x % 2 != 0 or pixels_y % 2 != 0:
     print("ERROR! number of pixels must be even")
@@ -165,30 +166,29 @@ for ray in ray_directions:
              ray_origin[1] - trig[0][1],
              ray_origin[2] - trig[0][2])
 
-        cross_det = (trig[2][1]*trig[1][2] - trig[2][2]*trig[1][1],
-                     trig[2][2]*trig[1][0] - trig[2][0]*trig[1][2],
-                     trig[2][0]*trig[1][1] - trig[2][1]*trig[1][0])
+        cross_det_tv = (d[2]*trig[1][1] - d[1]*trig[1][2],
+                        d[0]*trig[1][2] - d[2]*trig[1][0],
+                        d[1]*trig[1][0] - d[0]*trig[1][1])
 
-        main_det = ray[0]*cross_det[0] + ray[1]*cross_det[1] + ray[2]*cross_det[2]
+        cross_det_du = (trig[2][1]*ray[2] - trig[2][2]*ray[1],
+                        trig[2][2]*ray[0] - trig[2][0]*ray[2],
+                        trig[2][0]*ray[1] - trig[2][1]*ray[0])
+
+        main_det = trig[1][0]*cross_det_du[0] + trig[1][1]*cross_det_du[1] + trig[1][2]*cross_det_du[2]
 
         if round(main_det, 6) != 0:
             inv_det = 1/main_det
 
-            t = (d[0]*cross_det[0] + d[1]*cross_det[1] + d[2]*cross_det[2]) * inv_det
+            t = (trig[2][0]*cross_det_tv[0] + trig[2][1]*cross_det_tv[1] + trig[2][2]*cross_det_tv[2]) * inv_det
+
             if t > 0 and (not smallest_t or t < smallest_t):
-                inter_point = (d[0] - ray[0]*t-ray_origin[0],
-                               d[1] - ray[1]*t-ray_origin[1],
-                               d[2] - ray[2]*t-ray_origin[2],)
+                v_numerator_det = ray[0]*cross_det_tv[0] + ray[1]*cross_det_tv[1] + ray[2]*cross_det_tv[2]
+                v = v_numerator_det * inv_det
+                if v >= 0 and v <= 1:
+                    u_numerator_det = d[0]*cross_det_du[0] + d[1]*cross_det_du[1] + d[2]*cross_det_du[2]
+                    u = u_numerator_det * inv_det
 
-                divider_det = 1/(cross_det[0] + cross_det[1] + cross_det[2])
-
-                u_numerator_det = inter_point[1]*trig[2][2] - inter_point[2]*trig[2][1] + inter_point[2]*trig[1][2] - inter_point[0]*trig[2][2] + inter_point[0]*trig[2][1] - inter_point[1]*trig[2][0]
-                u = u_numerator_det * divider_det
-                if u >= 0 and u <= 1:
-                    v_numerator_det = inter_point[1]*trig[1][0] + inter_point[0]*trig[1][2] + inter_point[2]*trig[1][1] - inter_point[1]*trig[1][2] - inter_point[0]*trig[1][1] - inter_point[2]*trig[1][0]
-                    v = v_numerator_det * divider_det
-
-                    if v >= 0 and u+v <= 1:
+                    if u >= 0 and u+v <= 1:
                         smallest_t = t
                         ver_u = u
                         ver_v = v
@@ -199,11 +199,14 @@ for ray in ray_directions:
                   pixels_y-ray[2]-mid_pix_y-1)
 
     if u and v: res_image[pic_coords[1], pic_coords[0]] = [255, u*255, v*255]
+
     UV_intersects.append((u, v))
 
 endt = time()-startt
 print(endt)
 print("{:,} rays per second".format(int(len(UV_intersects)/(endt))))
 
-res_image = Image.fromarray(res_image)
-res_image.show()
+#res_image = Image.fromarray(res_image)
+cv2.imshow("wow", res_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
