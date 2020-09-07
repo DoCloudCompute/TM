@@ -149,7 +149,7 @@ for ray in ray_directions:
 
 endt = time()-startt
 print(endt)
-print("{:,} rays per second".format(len(UV_intersects)/(endt)))
+print("{:,} rays per second".format(int(len(UV_intersects)/(endt))))
 
 
 

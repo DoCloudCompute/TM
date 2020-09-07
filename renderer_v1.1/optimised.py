@@ -132,15 +132,15 @@ for ray in ray_directions:
                      trig[2][2]*ray[0] - trig[2][0]*ray[2],
                      trig[2][0]*ray[1] - trig[2][1]*ray[0])
 
-        main_det = - trig[1][0]*cross_det[0] - trig[1][1]*cross_det[1] - trig[1][2]*cross_det[2]
+        main_det = trig[1][0]*cross_det[0] + trig[1][1]*cross_det[1] + trig[1][2]*cross_det[2]
 
         if round(main_det, 6) != 0:
             inv_det = 1/main_det
 
-            u_numerator_det = - d[0]*cross_det[0] - d[1]*cross_det[1] - d[2]*cross_det[2]
+            u_numerator_det = d[0]*cross_det[0] + d[1]*cross_det[1] + d[2]*cross_det[2]
             u = u_numerator_det * inv_det
             if u >= 0 and u <= 1:
-                v_numerator_det = - trig[1][0]*d[1]*ray[2] - trig[1][2]*d[0]*ray[1] - trig[1][1]*d[2]*ray[0] + trig[1][2]*d[1]*ray[0] + trig[1][0]*d[2]*ray[1] + trig[1][1]*d[0]*ray[2]
+                v_numerator_det = trig[1][0]*d[1]*ray[2] + trig[1][2]*d[0]*ray[1] + trig[1][1]*d[2]*ray[0] - trig[1][2]*d[1]*ray[0] - trig[1][0]*d[2]*ray[1] - trig[1][1]*d[0]*ray[2]
                 v = v_numerator_det * inv_det
 
                 if v >= 0 and u+v <= 1: break
@@ -155,7 +155,7 @@ for ray in ray_directions:
 
 endt = time()-startt
 print(endt)
-print("{:,} rays per second".format(len(UV_intersects)/(endt)))
+print("{:,} rays per second".format(int(len(UV_intersects)/(endt))))
 
 
 
