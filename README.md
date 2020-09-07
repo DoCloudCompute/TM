@@ -13,3 +13,6 @@
 
 ### Renderer v2.1:
 * Has face occlusion
+
+### Renderer v2.2:
+* TODO: Some optimisations
