@@ -124,15 +124,20 @@ startt = time()
 
 for ray in ray_directions:
     for it, trig in enumerate(triangles_vec):
-        d = (ray_origin[0]-trig[0][0],
-             ray_origin[1]-trig[0][1],
-             ray_origin[2]-trig[0][2])
+        d = (ray_origin[0] - trig[0][0],
+             ray_origin[1] - trig[0][1],
+             ray_origin[2] - trig[0][2])
 
-        main_det = - trig[1][0]*trig[2][1]*ray[2] - trig[1][2]*trig[2][0]*ray[1] - trig[1][1]*trig[2][2]*ray[0] + trig[1][2]*trig[2][1]*ray[0] + trig[1][0]*trig[2][2]*ray[1] + trig[1][1]*trig[2][0]*ray[2]
+        cross_det = (trig[2][1]*ray[2] - trig[2][2]*ray[1],
+                     trig[2][2]*ray[0] - trig[2][0]*ray[2],
+                     trig[2][0]*ray[1] - trig[2][1]*ray[0])
+
+        main_det = - trig[1][0]*cross_det[0] - trig[1][1]*cross_det[1] - trig[1][2]*cross_det[2]
+
         if round(main_det, 6) != 0:
             inv_det = 1/main_det
 
-            u_numerator_det = - d[0]*trig[2][1]*ray[2] - d[2]*trig[2][0]*ray[1] - d[1]*trig[2][2]*ray[0] + d[2]*trig[2][1]*ray[0] + d[0]*trig[2][2]*ray[1] + d[1]*trig[2][0]*ray[2]
+            u_numerator_det = - d[0]*cross_det[0] - d[1]*cross_det[1] - d[2]*cross_det[2]
             u = u_numerator_det * inv_det
             if u >= 0 and u <= 1:
                 v_numerator_det = - trig[1][0]*d[1]*ray[2] - trig[1][2]*d[0]*ray[1] - trig[1][1]*d[2]*ray[0] + trig[1][2]*d[1]*ray[0] + trig[1][0]*d[2]*ray[1] + trig[1][1]*d[0]*ray[2]
