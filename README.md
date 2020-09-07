@@ -4,5 +4,12 @@
 * Triangle-ray intersection calculation
 * Baseline
 
-## Renderer v1.1 features:
+### Renderer v1.1:
 * Got fully optimised
+
+## Renderer v2 features:
+* Has support for STL file as input
+* Shows all faces (no occlusion)
+
+### Renderer v2.1:
+* Has face occlusion
