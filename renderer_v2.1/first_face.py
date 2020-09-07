@@ -9,10 +9,10 @@ Chapter 0: setting up vars and output
 """
 
 # input
-pixels_x = int(1280/1)
-pixels_y = int(720/1)
+pixels_x = int(1280/10)
+pixels_y = int(720/10)
 num_triangles = int(1)
-fov = int(300/1)
+fov = int(300/10)
 
 if pixels_x % 2 != 0 or pixels_y % 2 != 0:
     print("ERROR! number of pixels must be even")
@@ -35,6 +35,7 @@ stl = open("mesh.stl", "rb")
 stl_header = stl.read(80)
 stl_n_tri = stl.read(4)
 stl_n_tri = int.from_bytes(stl_n_tri, byteorder="little")
+print(stl_n_tri, "number of triangles.")
 
 
 for face in range(0, stl_n_tri):
@@ -111,7 +112,7 @@ of vertical pixels to get the angle variation per ray vertically. The expression
 """
 
 # ray origin is a point in space (Ox, Oy, Oz) represented by a tuple
-ray_origin = (-2,0,0)
+ray_origin = (-3,0,0)
 
 # directional vector is a list of tuples: (Mx, My, Mz)
 mid_pix_x = int(pixels_x / 2)
@@ -206,8 +207,8 @@ endt = time()-startt
 print(endt)
 print("{:,} rays per second".format(int(len(UV_intersects)/(endt))))
 
-res_image = Image.fromarray(res_image)
-res_image.show()
-#cv2.imshow("wow", res_image)
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()
+#res_image = Image.fromarray(res_image)
+#res_image.show()
+cv2.imshow("wow", res_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
