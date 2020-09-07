@@ -112,7 +112,7 @@ of vertical pixels to get the angle variation per ray vertically. The expression
 """
 
 # ray origin is a point in space (Ox, Oy, Oz) represented by a tuple
-ray_origin = (-3,0,0)
+ray_origin = (-1.1,0,0.32)
 
 # directional vector is a list of tuples: (Mx, My, Mz)
 mid_pix_x = int(pixels_x / 2)
@@ -202,6 +202,8 @@ for ray in ray_directions:
     if u and v: res_image[pic_coords[1], pic_coords[0]] = [255, u*255, v*255]
 
     UV_intersects.append((u, v))
+
+    if len(UV_intersects) % 100 == 0: print(len(UV_intersects)/(time()-startt), len(UV_intersects))
 
 endt = time()-startt
 print(endt)
