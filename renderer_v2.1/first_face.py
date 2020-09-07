@@ -206,7 +206,8 @@ endt = time()-startt
 print(endt)
 print("{:,} rays per second".format(int(len(UV_intersects)/(endt))))
 
-#res_image = Image.fromarray(res_image)
-cv2.imshow("wow", res_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+res_image = Image.fromarray(res_image)
+res_image.show()
+#cv2.imshow("wow", res_image)
+#cv2.waitKey(0)
+#cv2.destroyAllWindows()
