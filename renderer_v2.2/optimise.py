@@ -9,10 +9,10 @@ Chapter 0: setting up vars and output
 """
 
 # input
-pixels_x = int(1280/10)
-pixels_y = int(720/10)
+pixels_x = int(1280/8)
+pixels_y = int(720/8)
 num_triangles = int(1)
-fov = int(300/10)
+fov = int(800/8)
 
 if pixels_x % 2 != 0 or pixels_y % 2 != 0:
     print("ERROR! number of pixels must be even")
@@ -112,7 +112,7 @@ of vertical pixels to get the angle variation per ray vertically. The expression
 """
 
 # ray origin is a point in space (Ox, Oy, Oz) represented by a tuple
-ray_origin = (-1.1,0,0.32)
+ray_origin = (-2,0,0.32)
 
 # directional vector is a list of tuples: (Mx, My, Mz)
 mid_pix_x = int(pixels_x / 2)
@@ -158,11 +158,12 @@ print("Started RTX")
 UV_intersects = []
 startt = time()
 
-for ray in ray_directions:
+for ray_id, ray in enumerate(ray_directions):
     smallest_t = None
     ver_u, ver_v = None, None
-    for it, trig in enumerate(triangles_vec):
+    tri_id = 0
 
+    for it, trig in enumerate(triangles_vec):
         d = (ray_origin[0] - trig[0][0],
              ray_origin[1] - trig[0][1],
              ray_origin[2] - trig[0][2])
@@ -189,19 +190,19 @@ for ray in ray_directions:
                 if t > 0 and (not smallest_t or t < smallest_t):
                     v_numerator_det = ray[0]*cross_det_tv[0] + ray[1]*cross_det_tv[1] + ray[2]*cross_det_tv[2]
                     v = v_numerator_det * inv_det
+
                     if v >= 0 and v+u <= 1:
+                        tri_id = it
                         smallest_t = t
                         ver_u = u
                         ver_v = v
 
-    u, v = ver_u, ver_v
-
     pic_coords = (pixels_x-ray[1]-mid_pix_x-1,
                   pixels_y-ray[2]-mid_pix_y-1)
 
-    if u and v: res_image[pic_coords[1], pic_coords[0]] = [255, u*255, v*255]
+    if ver_u and ver_v: res_image[pic_coords[1], pic_coords[0]] = [255, ver_u*255, ver_v*255]
 
-    UV_intersects.append((u, v))
+    UV_intersects.append((ver_u, ver_v))
 
     if len(UV_intersects) % 100 == 0: print(len(UV_intersects)/(time()-startt), len(UV_intersects))
 
