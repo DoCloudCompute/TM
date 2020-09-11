@@ -3,18 +3,50 @@ import numpy as np
 from PIL import Image
 import cv2
 from time import time
+import struct
 
 """
 The idea is to take triangle vertices and translate them to 2D surface UV
 """
 
-pixels_x = 720
-pixels_y = 720
+pixels_x = int(1280/8)
+pixels_y = int(1280/8)
 res_image = np.zeros((pixels_y,pixels_x,3), dtype=np.uint8)
 
-triangles = [
-[(3,1,0), (3,-1,0), (3,1,-1)],
-]
+triangles = []
+
+stl = open("mesh.stl", "rb")
+stl_header = stl.read(80)
+stl_n_tri = stl.read(4)
+stl_n_tri = int.from_bytes(stl_n_tri, byteorder="little")
+
+for face in range(0, stl_n_tri):
+    stl_vals = []
+    for i in range(0,12):
+        val_bytes = stl.read(4)
+        val = float(struct.unpack('<f', val_bytes)[0])
+        stl_vals.append(val)
+
+    normal = (stl_vals[0],
+              stl_vals[1],
+              stl_vals[2])
+
+    A = (stl_vals[3],
+         stl_vals[4],
+         stl_vals[5])
+
+    B = (stl_vals[6],
+         stl_vals[7],
+         stl_vals[8])
+
+    C = (stl_vals[9],
+         stl_vals[10],
+         stl_vals[11])
+
+    tri_verts = [A, B, C]
+    triangles.append(tri_verts)
+
+    stl.read(2)
 
 triangles_vec = []
 
@@ -79,11 +111,9 @@ for tri in triangles:
         tri_vec_element = [A, E1, E2]
         triangles_vec.append(tri_vec_element)
 
-        #pic_coords = (screen_edges_2d[0][0]*u + screen_origin_2d[0],
-        #              screen_edges_2d[1][1]*v + screen_origin_2d[1])
-        #print(pic_coords)
+rps_avg_lst = []
 
-for tri in triangles_vec:
+for tri_id, tri in enumerate(triangles_vec):
     x_origin = tri[0][0]
     y_origin = tri[0][1]
 
@@ -98,7 +128,9 @@ for tri in triangles_vec:
     delta_u = 1/sqrt(tri[1][0]**2 + tri[1][1]**2)
     delta_v = 1/sqrt(tri[2][0]**2 + tri[2][1]**2)
 
-    u, v = 0, 0
+    u, v, i = 0, 0, 0
+
+    ray_start = time()
 
     while u <= 1:
         v = 0
@@ -107,14 +139,23 @@ for tri in triangles_vec:
                           tri[1][1]*u + tri[2][1]*v + y_origin)
 
             res_image[int(pic_coords[1]), int(pic_coords[0])] = [255, u*255, v*255]
+            i += 1 # rays traced
 
             v += delta_v
         u += delta_u
 
+    rps = (i)/(time()-ray_start)
+    rps_avg_lst.append(rps)
+    if len(rps_avg_lst) % 10 == 0: print("{:,} rays per sec".format(int(rps)))
+
 print("done")
 endt = time() - startt
 print(endt)
+
 #res_image = Image.fromarray(res_image)
 #res_image.show()
+
+rps_avg = sum(rps_avg_lst)/len(rps_avg_lst)
+print("{:,} rays per sec".format(int(rps_avg)))
 cv2.imshow("wow", res_image)
 cv2.waitKey(0)
