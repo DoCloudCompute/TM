@@ -9,8 +9,8 @@ import struct
 The idea is to take triangle vertices and translate them to 2D surface UV
 """
 
-pixels_x = int(1280/8)
-pixels_y = int(1280/8)
+pixels_x = int(720/1)
+pixels_y = int(720/1)
 res_image = np.zeros((pixels_y,pixels_x,3), dtype=np.uint8)
 
 triangles = []
@@ -49,8 +49,8 @@ for face in range(0, stl_n_tri):
     stl.read(2)
 
 triangles_vec = []
-ray_origin = (0, 0, 0)
-screen_origin = (2,-1,-1)
+ray_origin = (-3, 0, 0)
+screen_origin = (-1,-1,-1)
 screen_edges = [(0, 2, 0), (0, 0, 2)]
 
 screen_origin_2d = (0.5 * pixels_x,
@@ -93,8 +93,6 @@ for tri in triangles:
 
             projected_UV.append(UV_coords)
 
-            print(u,v)
-
             if u >= 0 and u <= 1 and v >= 0 and v <= 1: projected_UV[0] = True
 
     if projected_UV[0]:
@@ -112,8 +110,6 @@ for tri in triangles:
         triangles_vec.append(tri_vec_element)
 
 rps_avg_lst = []
-
-print(triangles_vec)
 
 for tri_id, tri in enumerate(triangles_vec):
     x_origin = tri[0][0]
@@ -140,7 +136,8 @@ for tri_id, tri in enumerate(triangles_vec):
             pic_coords = (tri[1][0]*u + tri[2][0]*v + x_origin,
                           tri[1][1]*u + tri[2][1]*v + y_origin)
 
-            res_image[int(pic_coords[1]), int(pic_coords[0])] = [255, u*255, v*255]
+            if not (pic_coords[0] < 0 or pic_coords[1] < 0 or pic_coords[0] > pixels_x or pic_coords[1] > pixels_y):
+                res_image[int(pic_coords[1]), int(pic_coords[0])] = [255, u*255, v*255]
             i += 1 # rays traced
 
             v += delta_v
@@ -150,14 +147,16 @@ for tri_id, tri in enumerate(triangles_vec):
     rps_avg_lst.append(rps)
     if len(rps_avg_lst) % 10 == 0: print("{:,} rays per sec".format(int(rps)))
 
-print("done")
+print("")
 endt = time() - startt
-print(endt)
-
-#res_image = Image.fromarray(res_image)
-#res_image.show()
+print("Took", endt, "seconds.")
 
 rps_avg = sum(rps_avg_lst)/len(rps_avg_lst)
-print("{:,} rays per sec".format(int(rps_avg)))
+max_rps = max(rps_avg_lst)
+min_rps = min(rps_avg_lst)
+print("Average RPS: {:,}".format(int(rps_avg)))
+print("Minimum RPS: {:,}".format(int(max_rps)))
+print("Maximum RPS: {:,}".format(int(min_rps)))
+
 cv2.imshow("wow", res_image)
 cv2.waitKey(0)
