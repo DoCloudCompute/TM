@@ -49,9 +49,7 @@ for face in range(0, stl_n_tri):
     stl.read(2)
 
 triangles_vec = []
-
 ray_origin = (0, 0, 0)
-
 screen_origin = (2,-1,-1)
 screen_edges = [(0, 2, 0), (0, 0, 2)]
 
@@ -95,6 +93,8 @@ for tri in triangles:
 
             projected_UV.append(UV_coords)
 
+            print(u,v)
+
             if u >= 0 and u <= 1 and v >= 0 and v <= 1: projected_UV[0] = True
 
     if projected_UV[0]:
@@ -112,6 +112,8 @@ for tri in triangles:
         triangles_vec.append(tri_vec_element)
 
 rps_avg_lst = []
+
+print(triangles_vec)
 
 for tri_id, tri in enumerate(triangles_vec):
     x_origin = tri[0][0]
