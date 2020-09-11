@@ -20,7 +20,7 @@
 ## Renderer v1.0.0:
 * TODO: add T > 0 checking to avoid drawing triangles that are behind
 * Has a MUCH faster rendering engine
-- does a 2D projection on the screen and then ray traces from the triangle to the ray origin
+* Does a 2D projection on the screen and then ray traces from the triangle to the ray origin
 * Has some artefacts like little holes in triangles (probably due to the delta U and delta V)
 * Has STL support
 * Has no face occlusion
