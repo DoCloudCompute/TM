@@ -111,6 +111,8 @@ for tri in triangles:
 
 rps_avg_lst = []
 
+mt = 11
+
 for tri_id, tri in enumerate(triangles_vec):
     x_origin = tri[0][0]
     y_origin = tri[0][1]
@@ -120,11 +122,11 @@ for tri_id, tri in enumerate(triangles_vec):
     if round(y_origin, 6) == round(y_origin, 0):
         y_origin = round(y_origin, 0)
 
-    x_offset = x_origin - round(x_origin, 0)
-    y_offset = y_origin - round(y_origin, 0)
+    x_offset = x_origin - int(x_origin)
+    y_offset = y_origin - int(y_origin)
 
-    delta_u = 1/sqrt(tri[1][0]**2 + tri[1][1]**2)
-    delta_v = 1/sqrt(tri[2][0]**2 + tri[2][1]**2)
+    delta_u = 1/(sqrt(tri[1][0]**2 + tri[1][1]**2)+100)
+    delta_v = 1/(sqrt(tri[2][0]**2 + tri[2][1]**2)+100)
 
     u, v, i = 0, 0, 0
 
@@ -135,6 +137,9 @@ for tri_id, tri in enumerate(triangles_vec):
         while v <= 1 and u+v <= 1:
             pic_coords = (tri[1][0]*u + tri[2][0]*v + x_origin,
                           tri[1][1]*u + tri[2][1]*v + y_origin)
+
+            pic_coords = (round(pic_coords[0], 0),
+                          round(pic_coords[1], 0))
 
             if not (pic_coords[0] < 0 or pic_coords[1] < 0 or pic_coords[0] > pixels_x or pic_coords[1] > pixels_y):
                 res_image[int(pic_coords[1]), int(pic_coords[0])] = [255, u*255, v*255]
@@ -148,7 +153,7 @@ for tri_id, tri in enumerate(triangles_vec):
     if len(rps_avg_lst) % 10 == 0: print("{:,} rays per sec".format(int(rps)))
 
 print("")
-endt = time() - startt
+endt = round(time() - startt, 3)
 print("Took", endt, "seconds.")
 
 rps_avg = sum(rps_avg_lst)/len(rps_avg_lst)
