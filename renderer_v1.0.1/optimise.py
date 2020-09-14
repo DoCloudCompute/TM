@@ -110,8 +110,7 @@ for tri in triangles:
         triangles_vec.append(tri_vec_element)
 
 rps_avg_lst = []
-
-mt = 11
+precalc_time = []
 
 for tri_id, tri in enumerate(triangles_vec):
     x_origin = int(tri[0][0])
@@ -129,13 +128,9 @@ for tri_id, tri in enumerate(triangles_vec):
     if tri[2][1] > 0: E2y = int(tri[2][1]+0.5)
     else: E2y = int(tri[2][1]-0.5)
 
-    if E1x + E2x > 0: x_origin += 1
-    if E1y + E2y > 0: y_origin += 1
-
     if not ((E1x == 0 and E1y == 0) or (E2x == 0 and E2y == 0)):
         delta_u = 1/(abs(E1x) + abs(E1y))
         delta_v = 1/(abs(E2x) + abs(E2y))
-
         u, v, i = 0, 0, 0
 
         ray_start = time()
@@ -143,11 +138,13 @@ for tri_id, tri in enumerate(triangles_vec):
         while u <= 1:
             v = 0
             while v <= 1 and u+v <= 1:
-                pic_coords = (E1x*u + E2x*v + x_origin,
-                              E1y*u + E2y*v + y_origin)
+                pic_coords = (int(E1x*u + E2x*v + x_origin),
+                              int(E1y*u + E2y*v + y_origin))
 
                 if not (pic_coords[0] < 0 or pic_coords[1] < 0 or pic_coords[0] > pixels_x or pic_coords[1] > pixels_y):
-                    res_image[int(pic_coords[1]), int(pic_coords[0])] = [255, u*255, v*255]
+                    # dat shit be very time consuming
+                    res_image[pic_coords[1], pic_coords[0]] = (255, u*255, v*255)
+
                 i += 1 # rays traced
 
                 v += delta_v
@@ -167,6 +164,7 @@ min_rps = min(rps_avg_lst)
 print("Average RPS: {:,}".format(int(rps_avg)))
 print("Minimum RPS: {:,}".format(int(max_rps)))
 print("Maximum RPS: {:,}".format(int(min_rps)))
+print("Time spent in precalc:", sum(precalc_time))
 
 cv2.imshow("wow", res_image)
 cv2.waitKey(0)
