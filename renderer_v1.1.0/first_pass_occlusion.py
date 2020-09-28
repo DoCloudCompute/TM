@@ -102,7 +102,8 @@ for tri in triangles:
                 D = tri_check[1][0]*tri_check[2][0] - tri_check[1][1]*tri_check[2][1]
                 du = vtx[0]*tri_check[2][0] - vtx[1]*tri_check[2][1]
                 dv = vtx[0]*tri_check[1][0] - vtx[1]*tri_check[1][1]
-                
+
+                if D == 0 or du+dv
 
 
         # the triangle is visible, vectorize it in 2d
