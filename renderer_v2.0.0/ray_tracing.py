@@ -32,6 +32,13 @@ def vec2(a, b):
     return (a[0] - b[0],
             a[1] - b[1])
 
+def vec3_norm(a):
+    return (a[0]**2 + a[1]**2 + a[2]**2)**0.5
+
+def unit_vec3(a):
+    return (a[0]/vec3_norm(a),
+            a[1]/vec3_norm(a),
+            a[2]/vec3_norm(a))
 
 """
 Step 1: read STL
@@ -74,7 +81,36 @@ def read_stl(fname):
 
 
 """
-Step 2: ignore faces that do not face the screen
+Step 2: Make a list of all angles of triangles
+between their median to origin and a line from origin to 1,0,0
+"""
+def angle_BVH(triangles):
+    ntri = len(triangles)
+    int_angle = np.zeros((4, ntri), dtype=np.uint32)
+    fp16_angle = np.zeros((ntri), dtype=np.float16)
+    fp32_angle = np.zeros((ntri), dtype=np.float32)
+
+    for tri_id, tri in enumerate(triangles):
+        median_x = (tri[0][0]+tri[1][0]+tri[2][0])/3
+        median_y = (tri[0][1]+tri[1][1]+tri[2][1])/3
+        median_z = (tri[0][2]+tri[1][2]+tri[2][2])/3
+
+        median = unit_vec3((median_x, median_y, median_z))
+        relative_vec = (1, 0, 0)
+
+        angle = dot3(median, relative_vec)
+
+        L1_BVH_idx = np.array([angle*2+0.5], dtype=np.int8)[0]
+        int_angle[L1_BVH_idx][tri_id] = tri_id
+
+        fp16_angle[tri_id] = angle
+        fp32_angle[tri_id] = angle
+
+    return int_angle, fp16_angle, fp32_angle
+
+
+"""
+Step 3: ignore faces that do not face the screen
 """
 def occlude_backface(triangles, screen_edges):
     visible_tris = []
@@ -89,7 +125,7 @@ def occlude_backface(triangles, screen_edges):
 
 
 """
-Step 3: sort tris by distance
+Step 4: sort tris by distance
 """
 def sort_dist(triangles, screen_edges, screen_origin):
     tris_dist = []
@@ -113,9 +149,8 @@ def sort_dist(triangles, screen_edges, screen_origin):
     return sorted_tris
 
 
-
 """
-Step 4: do 2D projection
+Step 5: do 2D projection
 """
 def vectorize_tris(projected_UV):
     A = (projected_UV[1][0], projected_UV[1][1])
@@ -125,30 +160,34 @@ def vectorize_tris(projected_UV):
     return [A, E1, E2]
 
 
+def UV_intersect(d, ray, Edge1, Edge2):
+    cross_det = cross(Edge2, ray)
+    main_det = dot3(Edge1, cross_det)
+
+    if round(main_det, 6) != 0:
+        inv_det = 1/main_det
+
+        u_numerator_det = dot3(d, cross_det)
+        u = u_numerator_det * inv_det
+
+        v_numerator_det = det3(screen_edges[0], d, ray)
+        v = v_numerator_det * inv_det
+    return u,v
+
 def project_2d(tri, ray_origin, screen_origin, screen_edges, screen_origin_2d, screen_edges_2d):
     projected_UV = [False]
     for vertex in tri:
         d = vec3(ray_origin, screen_origin)
         ray = vec3(vertex, ray_origin)
 
-        cross_det = cross(screen_edges[1], ray)
-        main_det = dot3(screen_edges[0], cross_det)
+        u, v = UV_intersect(d, ray, screen_edges[0], screen_edges[1])
 
-        if round(main_det, 6) != 0:
-            inv_det = 1/main_det
+        UV_coords = (screen_edges_2d[0][0]*u + screen_edges_2d[1][0]*v + pixels_x,
+                     screen_edges_2d[0][1]*u + screen_edges_2d[1][1]*v + pixels_y)
 
-            u_numerator_det = dot3(d, cross_det)
-            u = u_numerator_det * inv_det
-
-            v_numerator_det = det3(screen_edges[0], d, ray)
-            v = v_numerator_det * inv_det
-
-            UV_coords = (screen_edges_2d[0][0]*u + screen_edges_2d[1][0]*v + pixels_x,
-                         screen_edges_2d[0][1]*u + screen_edges_2d[1][1]*v + pixels_y)
-
-            projected_UV.append(UV_coords)
-            if u >= 0 and u <= 1 and v >= 0 and v <= 1:
-                projected_UV[0] = True
+        projected_UV.append(UV_coords)
+        if u >= 0 and u <= 1 and v >= 0 and v <= 1:
+            projected_UV[0] = True
 
     if projected_UV[0]:
         return vectorize_tris(projected_UV)
@@ -157,29 +196,71 @@ def project_2d(tri, ray_origin, screen_origin, screen_edges, screen_origin_2d, s
 
 
 """
-Step 5: ray trace
+Step 6: ray trace
 """
-def draw_tris(triangles_vec, res_image, pixels_x, pixels_y):
+
+def pixelate_vecs(tri):
+    if tri[1][0] > 0:
+        E1x = int(tri[1][0]+1.5)
+    else:
+        E1x = int(tri[1][0]-1.5)
+
+    if tri[1][1] > 0:
+        E1y = int(tri[1][1]+1.5)
+    else:
+        E1y = int(tri[1][1]-1.5)
+
+    if tri[2][0] > 0:
+        E2x = int(tri[2][0]+1.5)
+    else:
+        E2x = int(tri[2][0]-1.5)
+
+    if tri[2][1] > 0:
+        E2y = int(tri[2][1]+1.5)
+    else:
+        E2y = int(tri[2][1]-1.5)
+
+    if E1x + E2x > 0:
+        x_origin = int(tri[0][0]-0.5)
+    else:
+        x_origin = int(tri[0][0]+0.5)
+
+    if E1y + E2y > 0:
+        y_origin = int(tri[0][1]-0.5)
+    else:
+        y_origin = int(tri[0][1]+0.5)
+
+    return E1x, E1y, E2x, E2y, x_origin, y_origin
+
+def reflection_intersect(ray, ray_origin, triangles, int_angle, fp16_angle, fp32_angle):
+    unit_ray = unit_vec3(ray)
+    ray_angle = dot3(unit_ray, (1, 0, 0))
+
+    int_ray = np.array([ray_angle*2+0.5], dtype=np.int8)[0]
+    fp32_ray = np.array([ray_angle], dtype=np.float32)[0]
+
+    L1_intersects = int_angle[int_ray]
+    L2_intersects = []
+
+    for i in L1_intersects:
+        if abs(fp32_ray - fp32_angle[i]) < 0.01:
+            tri = triangles[i]
+            tri_origin = tri[0]
+            Edge1 = vec3(tri[1], tri_origin)
+            Edge2 = vec3(tri[2], tri_origin)
+
+            d = vec3(tri_origin, ray_origin)
+            u, v = UV_intersect(d, ray, Edge1, Edge2)
+            if u >= 0 and u <= 1 and v >= 0 and v <= 1 and u+v <= 1:
+                L2_intersects.append(i)
+
+    return len(L2_intersects)
+
+def draw_tris(triangles_vec, res_image, pixels_x, pixels_y, int_angle, fp16_angle, fp32_angle):
     global rps_avg_lst
 
     for tri_id, tri in enumerate(triangles_vec):
-        if tri[1][0] > 0: E1x = int(tri[1][0]+1.5)
-        else: E1x = int(tri[1][0]-1.5)
-
-        if tri[1][1] > 0: E1y = int(tri[1][1]+1.5)
-        else: E1y = int(tri[1][1]-1.5)
-
-        if tri[2][0] > 0: E2x = int(tri[2][0]+1.5)
-        else: E2x = int(tri[2][0]-1.5)
-
-        if tri[2][1] > 0: E2y = int(tri[2][1]+1.5)
-        else: E2y = int(tri[2][1]-1.5)
-
-        if E1x + E2x > 0: x_origin = int(tri[0][0]-0.5)
-        else: x_origin = int(tri[0][0]+0.5)
-
-        if E1y + E2y > 0: y_origin = int(tri[0][1]-0.5)
-        else: y_origin = int(tri[0][1]+0.5)
+        E1x, E1y, E2x, E2y, x_origin, y_origin = pixelate_vecs(tri)
 
         if not ((E1x == 0 and E1y == 0) or (E2x == 0 and E2y == 0)):
             delta_u = 1/(abs(E1x) + abs(E1y))
@@ -197,6 +278,9 @@ def draw_tris(triangles_vec, res_image, pixels_x, pixels_y):
                     if 0 <= pic_coords[0] < pixels_x and 0 <= pic_coords[1] < pixels_y:
                         # verify that the pixels have not already been drawn
                         if res_image[pic_coords[1], pic_coords[0], 2] == 0:
+                            ray_origin = (0,0,0)
+                            ray = (1, 0, 0)
+                            reflection_intersect(ray, ray_origin, triangles, int_angle, fp16_angle, fp32_angle)
                             res_image[pic_coords[1], pic_coords[0], 0] = u*255
                             res_image[pic_coords[1], pic_coords[0], 1] = v*255
                             res_image[pic_coords[1], pic_coords[0], 2] = 255
@@ -208,12 +292,13 @@ def draw_tris(triangles_vec, res_image, pixels_x, pixels_y):
 
             rps = (i)/(time()-ray_start)
             rps_avg_lst.append(rps)
-            if len(rps_avg_lst) % 500 == 0:
+            if len(rps_avg_lst) % 1 == 0:
                 print("{:,} rays per sec".format(int(rps)))
                 cv2.imshow("wow", res_image)
                 cv2.waitKey(1)
 
     return res_image
+
 
 
 """
@@ -239,7 +324,11 @@ screen_edges_2d = [(-pixels_x, 0), (0, -pixels_y)]
 rps_avg_lst = []
 startt = time()
 
-triangles = read_stl("suzanne_hi.stl")
+triangles = read_stl("../renderer_v1.2.0/suzanne_hi.stl")
+print("Building BVH...")
+int_angle, fp16_angle, fp32_angle = angle_BVH(triangles)
+print("Building BVH done!")
+
 occluded_tris = occlude_backface(triangles, screen_edges)
 sorted_triangles = sort_dist(occluded_tris, screen_edges, screen_origin)
 
@@ -251,8 +340,15 @@ for tri in sorted_triangles:
     if tri_vec:
         triangles_vec.append(tri_vec)
 
+# make the triangle intersect buffers
+# the buffer will hold the normal of the triangle
+len_tris = len(triangles_vec)
+tri_normals = np.zeros((len_tris, 3))
+# the following buffer will hold the directing vector of each ray as well as
+
 # dat shit has to be single thread
-res_image = draw_tris(triangles_vec, res_image, pixels_x, pixels_y)
+print("RTX started...")
+res_image = draw_tris(triangles_vec, res_image, pixels_x, pixels_y, int_angle, fp16_angle, fp32_angle)
 
 # print stats
 print("")
