@@ -68,40 +68,51 @@ def angle_BVH(triangles, nelem):
 
     return angles
 
+def vectorize_triangles(tri):
+    A = (tri[0][0],
+         tri[0][1],
+         tri[0][2])
+    E1 = vec3(A, tri[1])
+    E2 = vec3(A, tri[2])
+
+    return A, E1, E2
+
+def seek_array(angles, guess, ceiling):
+    i = 0
+
+    while guess+i < ceiling or guess-i > 0:
+        i += 1
+        if guess+i < ceiling:
+            tri_hit = angles[guess+i]
+            if tri_hit != 0:
+                return int(tri_hit)-1
+
+        if guess-i > 0:
+            tri_hit = angles[guess-i]
+            if tri_hit != 0:
+                return int(tri_hit)-1
+
 def reflection_intersect(ray, triangles, angles, nelem):
     unit_ray = unit_vec3(ray)
     ray_angle = dot3(unit_ray, (1, 0, 0))
 
     ray_BVH = int(0.5*(ray_angle+1) * nelem)
+    closest_tri = angles[ray_BVH]
 
-    print(ray_BVH)
+    if closest_tri == 0:
+        closest_tri = seek_array(angles, ray_BVH, nelem)
+        print(closest_tri)
 
-    tri_hit = angles[ray_BVH]
-    i = 0
-    chk_idx_up = ray_BVH
-    chk_idx_down = ray_BVH
-
-    while tri_hit == 0:
-        i += 1
-        if ray_BVH+i < nelem:
-            tri_hit = angles[ray_BVH+i]
-        if tri_hit == 0 and ray_BVH-i > 0:
-            tri_hit = angles[ray_BVH-i]
-        elif ray_BVH+i >= nelem:
-
-            break
+    intersecting_tri = triangles[closest_tri]
 
 
-        chk_idx_down -= i
-        angle_val_up = angles[chk_idx_up]
-        angle_val_down = angles[chk_idx_up]
-        print(ray_BVH)
+    return None
 
-    return ray_BVH
+
 
 startt = time()
-nelem = 2**16
-triangles = make_random_triangles(100)
+nelem = 2**18
+triangles = make_random_triangles(int(1e5))
 #triangles = [[(2, -1, -1), (2, -1, 1), (2, 1, 0)]]
 ray = (1, 0, 0)
 angles = angle_BVH(triangles, nelem)
