@@ -33,6 +33,7 @@ def gen_triangle_vectors(triangle_vertices, color):
         B = tri[1]
         C = tri[2]
         normal = vec_tools.unit3(tri[3])
+        normal = vec_tools.negative(normal)
 
         E1 = vec_tools.vec3(B, A)
         E2 = vec_tools.vec3(C, A)
@@ -51,6 +52,7 @@ def gen_bounce_ray(normal, origin, d):
     bounce_d = vec_tools.sub3(d, right_product)
 
     return origin, bounce_d
+
 
 def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
     pix_RGB = (0,0,0) # set color
@@ -96,7 +98,6 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
                     pix_RGB = vec_tools.add3(pix_RGB, reflection)
 
     return pix_RGB
-
 
 
 def main():
