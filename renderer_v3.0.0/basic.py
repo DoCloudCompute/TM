@@ -19,7 +19,7 @@ def gen_ray(pixel_x, pixel_y, screen, viewer_origin):
          screen[0][1] + screen[1][1]*pixel_x + screen[2][1]*pixel_y,
          screen[0][2] + screen[1][2]*pixel_x + screen[2][2]*pixel_y)
 
-    d = vec_tools.vec3(viewer_origin, S) # directing vector
+    d = vec_tools.sub3(S, viewer_origin) # directing vector
     d = vec_tools.unit3(d)
     return viewer_origin, d
 
@@ -35,8 +35,8 @@ def gen_triangle_vectors(triangle_vertices, color):
         normal = vec_tools.unit3(tri[3])
         normal = vec_tools.negative(normal)
 
-        E1 = vec_tools.vec3(B, A)
-        E2 = vec_tools.vec3(C, A)
+        E1 = vec_tools.sub3(B, A)
+        E2 = vec_tools.sub3(C, A)
 
         tri_vec_element = [A, E1, E2, normal, color]
         triangles_vec.append(tri_vec_element)
@@ -65,7 +65,7 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
     for tri in triangles_vec:
         #print(tri)
         V, E1, E2, normal, color = tri
-        VO = vec_tools.vec3(O, V)
+        VO = vec_tools.sub3(O, V)
 
         cross1 = vec_tools.cross(E1, E2)
         neg_d = vec_tools.negative(d)
