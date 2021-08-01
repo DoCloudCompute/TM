@@ -57,6 +57,8 @@ def gen_bounce_ray(normal, origin, d):
 def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
     pix_RGB = (0,0,0) # set color
 
+    intersected_tri = None
+
     O, d = ray # unpack origin and directing vector
 
     # will be used to check for closest triangle
@@ -84,18 +86,28 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
             if u+v <= 1 and u >= 0 and v >= 0:
                 smallest_t = t
                 pix_RGB = color
+                intersected_tri = tri
+                intersected_u = u
+                intersected_v = v
 
-                # if the desired trace is not yet complete, keep reflecting
-                if reflection_depth < max_reflection:
-                    # origin of bounce ray
-                    intersection_coords = (V[0] + E1[0]*u + E2[0]*v,
-                                           V[1] + E1[1]*u + E2[1]*v,
-                                           V[2] + E1[2]*u + E2[2]*v)
+    # if the desired trace is not yet complete, keep reflecting
+    if reflection_depth < max_reflection and intersected_tri != None:
+        # origin of bounce ray
+        V, E1, E2, normal, color = intersected_tri
+        u = intersected_u
+        v = intersected_v
+        intersection_coords = (V[0] + E1[0]*u + E2[0]*v,
+                               V[1] + E1[1]*u + E2[1]*v,
+                               V[2] + E1[2]*u + E2[2]*v)
 
-                    bounce_ray = gen_bounce_ray(normal, intersection_coords, d)
+        bounce_ray = gen_bounce_ray(normal, intersection_coords, d)
 
-                    reflection = get_intersection(triangles_vec, bounce_ray, max_reflection, reflection_depth+1)
-                    pix_RGB = vec_tools.add3(pix_RGB, reflection)
+        reflection = get_intersection(triangles_vec, bounce_ray, max_reflection, reflection_depth+1)
+        #pix_RGB = vec_tools.add3(pix_RGB, reflection)
+        if reflection == (0, 0, 255):
+            pix_RGB = (255, 0, 0)
+        elif reflection == (100, 100, 100):
+            pix_RGB = (0, 255, 0)
 
     return pix_RGB
 
