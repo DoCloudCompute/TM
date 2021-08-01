@@ -2,6 +2,7 @@ import vec_tools
 from STL_reader import read_stl
 import numpy as np
 import cv2
+import time
 
 # first, define screen, generator for rays
 def make_screen(screen_distance, resolution):
@@ -151,4 +152,8 @@ def main():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+startt = time.time()
 main()
+endt = time.time()
+
+print("Time taken: ", endt-startt)
