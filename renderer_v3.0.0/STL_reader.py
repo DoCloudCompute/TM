@@ -5,8 +5,8 @@ def read_stl(fname):
 
     stl = open(fname, "rb")
     stl_header = stl.read(80)
-    stl_n_tri = stl.read(4)
-    stl_n_tri = int.from_bytes(stl_n_tri, byteorder="little")
+    stl_n_buf = stl.read(4)
+    stl_n_tri = int.from_bytes(stl_n_buf, byteorder="little")
 
     for face in range(0, stl_n_tri):
         stl_vals = []
