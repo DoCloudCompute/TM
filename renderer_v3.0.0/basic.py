@@ -65,7 +65,6 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
     smallest_t = None
 
     for tri in triangles_vec:
-        #print(tri)
         V, E1, E2, normal, color = tri
         VO = vec_tools.sub3(O, V)
 
@@ -121,15 +120,15 @@ def main():
     # create the image output buffer
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
-    triangle_vertices = read_stl("../utils/icosphere_red_right.stl")
-    triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
+    triangle_vertices = read_stl("icosphere.stl")
+    triangles_vec = gen_triangle_vectors(triangle_vertices, (100, 100, 100))
 
-    triangle_vertices = read_stl("../utils/icosphere_yellow_left.stl")
-    triangles_vec = triangles_vec + gen_triangle_vectors(triangle_vertices, (0, 255, 255))
+    triangle_vertices = read_stl("refl_plane.stl")
+    triangles_vec = triangles_vec + gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     screen = make_screen(2330, resolution)
 
-    for pixel_x in range(300, resolution[0]):
+    for pixel_x in range(resolution[0]):
         for pixel_y in range(resolution[1]):
             ray = gen_ray(pixel_x, pixel_y, screen, viewer_origin)
             pix_RGB = get_intersection(triangles_vec, ray, max_reflection=1)
