@@ -33,7 +33,6 @@ def gen_triangle_vectors(triangle_vertices, color):
         B = tri[1]
         C = tri[2]
         normal = vec_tools.unit3(tri[3])
-        normal = vec_tools.negative(normal)
 
         E1 = vec_tools.sub3(B, A)
         E2 = vec_tools.sub3(C, A)
@@ -42,6 +41,7 @@ def gen_triangle_vectors(triangle_vertices, color):
         triangles_vec.append(tri_vec_element)
 
     return triangles_vec
+
 
 def gen_bounce_ray(normal, origin, d):
     # https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
