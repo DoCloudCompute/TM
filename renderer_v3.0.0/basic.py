@@ -68,7 +68,7 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
         V, E1, E2, normal, color = tri
         VO = vec_tools.sub3(O, V)
 
-        cross1 = vec_tools.cross(E1, E2)
+        cross1 = vec_tools.cross(E1, E2) # that's the normal
         neg_d = vec_tools.negative(d)
         invdet = -1/(vec_tools.dot3(d, cross1))
 
