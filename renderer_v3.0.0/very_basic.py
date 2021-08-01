@@ -147,8 +147,6 @@ def main():
 
 startt = time.time()
 main()
-#res = gen_bounce_ray(vec_tools.unit3((-1, 0, 0)), (0,0,0), (1,0,0))
-#print(res)
 endt = time.time()
 
 print("Time taken: ", endt-startt)
