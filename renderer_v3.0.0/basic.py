@@ -46,8 +46,8 @@ def gen_triangle_vectors(triangle_vertices, color):
 def gen_bounce_ray(normal, origin, d):
     # https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
     d_dot_n = vec_tools.dot3(d, normal)
-    d2 = vec_tools.mult3_scalar(d, 2)
-    right_product = vec_tools.mult3_scalar(d2,  d_dot_n)
+    normal2 = vec_tools.mult3_scalar(normal, 2)
+    right_product = vec_tools.mult3_scalar(normal2,  d_dot_n)
 
     bounce_d = vec_tools.sub3(d, right_product)
 
