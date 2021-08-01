@@ -75,6 +75,12 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
         if abs(pre_invdet) < 1e-5:
             continue
 
+        invdet = -1/pre_invdet
+
+        t = vec_tools.dot3(VO, cross1) * invdet
+        if t < 1e-6:
+            continue
+
         if smallest_t == None or t < smallest_t:
             cross2 = vec_tools.cross(VO, neg_d)
 
