@@ -51,6 +51,7 @@ def norm3(a):
     return (a[0]**2 + a[1]**2 + a[2]**2)**0.5
 
 def unit3(a):
-    return (a[0]/norm3(a),
-            a[1]/norm3(a),
-            a[2]/norm3(a))
+    n = norm3(a)
+    return (a[0]/n,
+            a[1]/n,
+            a[2]/n)
