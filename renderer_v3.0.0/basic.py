@@ -114,11 +114,9 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
         bounce_ray = gen_bounce_ray(normal, intersection_coords, d)
 
         reflection = get_intersection(triangles_vec, bounce_ray, max_reflection, reflection_depth+1)
-        #pix_RGB = vec_tools.add3(pix_RGB, reflection)
-        if reflection == (0, 0, 255):
-            pix_RGB = (255, 0, 0)
-        elif reflection == (100, 100, 100):
-            pix_RGB = (0, 255, 0)
+
+        if reflection != (0,0,0):
+            pix_RGB = vec_tools.mixRGB(pix_RGB, reflection, 0.5)
 
     return pix_RGB
 
