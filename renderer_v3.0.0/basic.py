@@ -33,10 +33,11 @@ def gen_triangle_vectors(triangle_vertices, color):
         A = tri[0]
         B = tri[1]
         C = tri[2]
-        normal = vec_tools.unit3(tri[3])
 
         E1 = vec_tools.sub3(B, A)
         E2 = vec_tools.sub3(C, A)
+
+        normal = vec_tools.cross(E1, E2)
 
         tri_vec_element = [A, E1, E2, normal, color]
         triangles_vec.append(tri_vec_element)
@@ -46,6 +47,7 @@ def gen_triangle_vectors(triangle_vertices, color):
 
 def gen_bounce_ray(normal, origin, d):
     # https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
+    normal = vec_tools.unit3(normal)
     d_dot_n = vec_tools.dot3(d, normal)
     normal2 = vec_tools.mult3_scalar(normal, 2)
     right_product = vec_tools.mult3_scalar(normal2,  d_dot_n)
@@ -69,7 +71,7 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
         V, E1, E2, normal, color = tri
         VO = vec_tools.sub3(O, V)
 
-        cross1 = vec_tools.cross(E1, E2) # that's the normal
+        cross1 = normal
         neg_d = vec_tools.negative(d)
         pre_invdet = vec_tools.dot3(d, cross1)
 
@@ -87,6 +89,9 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
 
             neg_E2 = vec_tools.negative(E2)
             u = vec_tools.dot3(neg_E2, cross2) * invdet
+            if u > 1 or u < 0:
+                continue
+
             v = vec_tools.dot3(E1, cross2) * invdet
 
             if u+v <= 1 and u >= 0 and v >= 0:
