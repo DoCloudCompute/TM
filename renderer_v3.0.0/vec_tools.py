@@ -55,3 +55,13 @@ def unit3(a):
     return (a[0]/n,
             a[1]/n,
             a[2]/n)
+
+def mixRGB(a, b, f=0.5):
+    # fix f between 0 and 1
+    f = min([1, f])
+    f = max([0, f])
+
+    opp_f = 1-f
+    return (a[0]*f + b[0]*opp_f,
+            a[1]*f + b[1]*opp_f,
+            a[2]*f + b[2]*opp_f)
