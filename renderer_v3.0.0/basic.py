@@ -130,11 +130,13 @@ def main():
     # create the image output buffer
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
-    triangle_vertices = read_stl("icosphere.stl")
+    triangle_vertices = read_stl("mesh.stl")
     triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     triangle_vertices = read_stl("refl_plane.stl")
     triangles_vec = triangles_vec + gen_triangle_vectors(triangle_vertices, (100, 100, 100))
+
+    print("init done")
 
     screen = make_screen(2330, resolution)
 
@@ -147,10 +149,11 @@ def main():
                 res_image[pixel_y, pixel_x] = pix_RGB
 
         cv2.imshow("wow", res_image)
-        cv2.waitKey(0)
+        cv2.waitKey(1)
         print(pixel_x, end="\r")
 
     print("done")
+    cv2.imwrite(str(time.time())+".png", res_image)
     cv2.imshow("wow", res_image)
     cv2.waitKey(1)
     cv2.destroyAllWindows()
