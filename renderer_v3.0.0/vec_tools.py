@@ -50,6 +50,9 @@ def vec2(a, b):
 def norm3(a):
     return (a[0]**2 + a[1]**2 + a[2]**2)**0.5
 
+def norm2(a):
+    return (a[0]**2 + a[1]**2)**0.5
+
 def unit3(a):
     n = norm3(a)
     return (a[0]/n,
