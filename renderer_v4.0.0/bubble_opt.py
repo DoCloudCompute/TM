@@ -1,5 +1,6 @@
 import vec_tools
 from STL_reader import read_stl
+from bubble_search_v2 import make_tree, find_farthest_val
 import numpy as np
 import cv2
 import time
@@ -52,8 +53,8 @@ def gen_triangle_vectors(triangle_vertices, color):
         normal = vec_tools.cross(E1, E2)
 
         tri_vec_element = [A, E1, E2, normal, color]
-        tri_bubble = [centroid, radius_squared, [A, E1, E2, tri_vec_element]]
-        tri_bubble = [centroid, radius_squared, ["a"]]
+        tri_bubble = [centroid, radius_squared, tri_vec_element]
+        #tri_bubble = [centroid, radius_squared, "hi"]
         triangles_vec.append(tri_bubble)
 
     return triangles_vec
@@ -115,8 +116,45 @@ def get_HDRI(ray):
     return tuple(hdri_img[v, u])
 
 
-def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
+def walk_tree(bubble_tree, ray):
+    """
+    first check the number of elements in list, if theres 3 of em, its a bubble
+    otherwise, its a triangle so return just that
+
+    get 2 first list elems, see if intersect or no
+    if yes, call again for each sub element
+    """
+
+    if len(bubble_tree[0]) != 3:
+        triangle = bubble_tree
+        return triangle
+
+    O, d = ray
+    centroid, radius_squared = bubble_tree[0:2]
+
+    # CRM page 64
+    OC = vec_tools.sub3(centroid, O)
+    OC_cross_d = vec_tools.cross(OC, d)
+    dist_sq = vec_tools.norm3_sq(OC_cross_d)
+
+    if dist_sq <= radius_squared:
+        potential_intersections = []
+        groups = bubble_tree[2]
+
+        for group in groups:
+            res = walk_tree(group, ray)
+            if res != None:
+                potential_intersections += res
+    else:
+        return
+
+    return potential_intersections
+
+
+def get_intersection(bubble_tree, ray, max_reflection, reflection_depth = 0):
     global reflection_count
+
+    triangles_vec = walk_tree(bubble_tree, ray)
 
     pix_RGB = None # set color
 
@@ -176,14 +214,13 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
 
         bounce_ray = gen_bounce_ray(normal, intersection_coords, d)
 
-        reflection = get_intersection(triangles_vec, bounce_ray, max_reflection, reflection_depth+1)
+        reflection = get_intersection(bubble_tree, bounce_ray, max_reflection, reflection_depth+1)
 
         if reflection != None:
             pix_RGB = vec_tools.mixRGB(pix_RGB, reflection, 0.5)
 
     if reflection_depth > reflection_count:
         reflection_count = reflection_depth
-        print(reflection_count)
 
     return pix_RGB
 
@@ -198,38 +235,42 @@ def main():
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
     triangles_vec = []
-    triangle_vertices = read_stl("STLs/icosphere.stl")
+    triangle_vertices = read_stl("STLs/mesh.stl")
     triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     triangle_vertices = read_stl("STLs/refl_plane.stl")
     triangles_vec = triangles_vec + gen_triangle_vectors(triangle_vertices, (100, 100, 100))
 
+    bubble_tree = make_tree(triangles_vec)
+
     print("init done")
+    startt = time.time()
 
     screen = make_screen(2330, resolution)
 
     for pixel_x in range(resolution[0]):
         for pixel_y in range(resolution[1]):
             ray = gen_ray(pixel_x, pixel_y, screen, viewer_origin)
-            pix_RGB = get_intersection(triangles_vec, ray, max_reflection=128)
+            pix_RGB = get_intersection(bubble_tree, ray, max_reflection=128)
 
             if pix_RGB != None:
                 res_image[pixel_y, pixel_x] = pix_RGB
 
         cv2.imshow("wow", res_image)
         cv2.waitKey(1)
-        #print(pixel_x, end="\r")
+        print(pixel_x, end="\r")
 
     print("done")
+    endt = time.time()
+
     imloc = "outputs/{}.png".format(int(time.time()))
     cv2.imwrite(imloc, res_image)
     cv2.imshow("wow", res_image)
     cv2.waitKey(1)
     cv2.destroyAllWindows()
 
+    return endt-startt
 
-startt = time.time()
-main()
-endt = time.time()
 
-print("Time taken: ", endt-startt)
+TTC = main()
+print("Time to completion: ", TTC)
