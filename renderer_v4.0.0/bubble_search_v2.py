@@ -1,5 +1,4 @@
 import vec_tools
-from STL_reader import read_stl
 
 
 def find_farthest_val(list_of_points, target):
@@ -9,32 +8,6 @@ def find_farthest_val(list_of_points, target):
         dist_lst.append(distance_squared)
 
     return max(dist_lst)
-
-
-def gen_triangle_vectors(triangle_vertices, color):
-    # color are BGR (Blue, Green, Red)
-    # transform triangles to triangles_vec (E1 = B - A | E2 = C - A)
-    triangles_vec = []
-    for tri in triangle_vertices:
-        A = tri[0]
-        B = tri[1]
-        C = tri[2]
-
-        centroid = vec_tools.centroid3(A, B, C)
-
-        radius_squared = find_farthest_val([A, B, C], centroid)
-
-        E1 = vec_tools.sub3(B, A)
-        E2 = vec_tools.sub3(C, A)
-
-        normal = vec_tools.cross(E1, E2)
-
-        tri_vec_element = [A, E1, E2, normal, color]
-        tri_bubble = [centroid, radius_squared, [A, E1, E2, tri_vec_element]]
-        tri_bubble = [centroid, radius_squared, ["a"]]
-        triangles_vec.append(tri_bubble)
-
-    return triangles_vec
 
 
 def find_farthest_id(center, triangle_bubbles):
@@ -131,11 +104,3 @@ def make_tree(triangle_bubbles):
         sub_bubble3 = make_tree(group3)
 
     return [centroid, radius, [sub_bubble1, sub_bubble2, sub_bubble3]]
-
-
-
-
-triangles = read_stl("STLs/icosphere.stl")
-tri_vecs = gen_triangle_vectors(triangles, (255, 255, 255))
-res = make_tree(tri_vecs)
-print(res)
