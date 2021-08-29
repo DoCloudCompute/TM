@@ -238,11 +238,13 @@ def main():
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
     triangles_vec = []
-    triangle_vertices = read_stl("STLs/mesh.stl")
+    triangle_vertices = read_stl("STLs/suzanne_hi.stl")
     triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     triangle_vertices = read_stl("STLs/refl_plane.stl")
     triangles_vec = triangles_vec + gen_triangle_vectors(triangle_vertices, (100, 100, 100))
+
+    print("Number of triangles:", len(triangles_vec))
 
     bubble_tree = make_tree(triangles_vec)
 
