@@ -177,7 +177,6 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
 
     if reflection_depth > reflection_count:
         reflection_count = reflection_depth
-        print(reflection_count)
 
     return pix_RGB
 
@@ -212,7 +211,7 @@ def main():
 
         cv2.imshow("wow", res_image)
         cv2.waitKey(1)
-        #print(pixel_x, end="\r")
+        print(pixel_x, end="\r")
 
     print("done")
     imloc = "outputs/{}.png".format(int(time.time()))
