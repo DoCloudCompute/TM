@@ -156,6 +156,9 @@ def get_intersection(bubble_tree, ray, max_reflection, reflection_depth = 0):
 
     triangles_vec = walk_tree(bubble_tree, ray)
 
+    if triangles_vec == None:
+        return get_HDRI(ray)
+
     pix_RGB = None # set color
 
     intersected_tri = None
