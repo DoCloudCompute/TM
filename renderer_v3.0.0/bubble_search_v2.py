@@ -97,7 +97,7 @@ def make_tree(triangle_bubbles):
     group1 = []
     for id in group1_ids:
         group1.append(triangle_bubbles[id])
-    for id in group1_ids:
+    for id in sorted(group1_ids, reverse=True):
         del triangle_bubbles[id]
 
     if len(group1) <= 3:
@@ -114,7 +114,7 @@ def make_tree(triangle_bubbles):
     group2 = []
     for id in group2_ids:
         group2.append(triangle_bubbles[id])
-    for id in group2_ids:
+    for id in sorted(group2_ids, reverse=True):
         del triangle_bubbles[id]
 
     if len(group2) <= 3:
@@ -124,7 +124,6 @@ def make_tree(triangle_bubbles):
 
 
     group3 = triangle_bubbles
-    triangle_bubbles = []
     if len(group3) <= 3:
         sub_bubble3 = group3
     else:
