@@ -181,7 +181,7 @@ def get_intersection(bubble_tree, ray, max_reflection, reflection_depth = 0):
         neg_d = vec_tools.negative(d)
         pre_invdet = vec_tools.dot3(d, cross1)
 
-        if abs(pre_invdet) < 1e-5:
+        if abs(pre_invdet) < 1e-8:
             continue
 
         invdet = -1/pre_invdet
