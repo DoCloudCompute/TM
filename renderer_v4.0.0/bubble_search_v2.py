@@ -1,6 +1,12 @@
 import vec_tools
 
 
+"""
+kinda started from this:
+https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.cuemath.com%2Fcentroid-formula%2F&psig=AOvVaw1axA-8I0hsGYfFaWFA6kGI&ust=1628840411203000&source=images&cd=vfe&ved=0CAoQjRxqFwoTCMCAmYK12PICFQAAAAAdAAAAABAD
+"""
+
+
 def find_farthest_val(list_of_points, target):
     dist_lst = []
     for point in list_of_points:
