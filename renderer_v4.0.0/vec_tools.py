@@ -67,6 +67,10 @@ def points_separation_sq(a, b):
     vec_BA = sub3(a, b)
     return norm3_sq(vec_BA)
 
+def points_separation(a, b):
+    vec_BA = sub3(a, b)
+    return norm3(vec_BA)
+
 def norm2(a):
     return (a[0]**2 + a[1]**2)**0.5
 
