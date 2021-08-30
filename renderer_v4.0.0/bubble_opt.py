@@ -170,6 +170,11 @@ def get_intersection(bubble_tree, ray, max_reflection, reflection_depth = 0):
 
     for tri in triangles_vec:
         V, E1, E2, normal, color = tri
+
+        # backface culling
+        if vec_tools.dot3(d, normal) >= 0:
+            continue
+
         VO = vec_tools.sub3(O, V)
 
         cross1 = normal
@@ -238,7 +243,7 @@ def main():
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
     triangles_vec = []
-    triangle_vertices = read_stl("STLs/suzanne_hi.stl")
+    triangle_vertices = read_stl("STLs/icosphere.stl")
     triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     triangle_vertices = read_stl("STLs/refl_plane.stl")
