@@ -4,8 +4,8 @@ import vec_tools
 def find_farthest_val(list_of_points, target):
     dist_lst = []
     for point in list_of_points:
-        distance_squared = vec_tools.points_separation_sq(point, target)
-        dist_lst.append(distance_squared)
+        distance = vec_tools.points_separation(point, target)
+        dist_lst.append(distance)
 
     return max(dist_lst)
 
@@ -14,7 +14,7 @@ def find_farthest_id(center, triangle_bubbles):
     biggest_dist = None
     for tri_id, tri in enumerate(triangle_bubbles):
         tri_centroid = tri[0]
-        tri_radius = tri[1]**0.5
+        tri_radius = tri[1]
         dist = (vec_tools.points_separation(tri_centroid, center) + tri_radius)**2
 
         if biggest_dist == None or dist > biggest_dist:

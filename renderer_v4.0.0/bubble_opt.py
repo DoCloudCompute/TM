@@ -45,7 +45,7 @@ def gen_triangle_vectors(triangle_vertices, color):
 
         centroid = vec_tools.centroid3(A, B, C)
 
-        radius_squared = find_farthest_val([A, B, C], centroid)
+        radius = find_farthest_val([A, B, C], centroid)
 
         E1 = vec_tools.sub3(B, A)
         E2 = vec_tools.sub3(C, A)
@@ -53,7 +53,7 @@ def gen_triangle_vectors(triangle_vertices, color):
         normal = vec_tools.cross(E1, E2)
 
         tri_vec_element = [A, E1, E2, normal, color]
-        tri_bubble = [centroid, radius_squared, tri_vec_element]
+        tri_bubble = [centroid, radius, tri_vec_element]
         triangles_vec.append(tri_bubble)
 
     return triangles_vec
