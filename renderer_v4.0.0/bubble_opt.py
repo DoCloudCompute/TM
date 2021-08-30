@@ -54,7 +54,6 @@ def gen_triangle_vectors(triangle_vertices, color):
 
         tri_vec_element = [A, E1, E2, normal, color]
         tri_bubble = [centroid, radius_squared, tri_vec_element]
-        #tri_bubble = [centroid, radius_squared, "hi"]
         triangles_vec.append(tri_bubble)
 
     return triangles_vec
