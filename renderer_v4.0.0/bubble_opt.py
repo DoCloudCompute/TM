@@ -256,7 +256,7 @@ def main():
     for pixel_x in range(resolution[0]):
         for pixel_y in range(resolution[1]):
             ray = gen_ray(pixel_x, pixel_y, screen, viewer_origin)
-            pix_RGB = get_intersection(bubble_tree, ray, max_reflection=128)
+            pix_RGB = get_intersection(bubble_tree, ray, max_reflection=4)
 
             if pix_RGB != None:
                 res_image[pixel_y, pixel_x] = pix_RGB
