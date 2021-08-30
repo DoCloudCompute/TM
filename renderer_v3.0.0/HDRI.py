@@ -123,6 +123,11 @@ def get_intersection(triangles_vec, ray, max_reflection, reflection_depth = 0):
 
     for tri in triangles_vec:
         V, E1, E2, normal, color = tri
+
+        # backface culling
+        if vec_tools.dot3(d, normal) >= 0:
+            continue
+
         VO = vec_tools.sub3(O, V)
 
         cross1 = normal
