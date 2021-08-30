@@ -191,7 +191,7 @@ def main():
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
     triangles_vec = []
-    triangle_vertices = read_stl("STLs/mesh.stl")
+    triangle_vertices = read_stl("STLs/suzanne_hi.stl")
     triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     triangle_vertices = read_stl("STLs/refl_plane.stl")
@@ -209,8 +209,9 @@ def main():
             if pix_RGB != None:
                 res_image[pixel_y, pixel_x] = pix_RGB
 
-        cv2.imshow("wow", res_image)
-        cv2.waitKey(1)
+            if pixel_y % 10 == 0:
+                cv2.imshow("wow", res_image)
+                cv2.waitKey(1)
         print(pixel_x, end="\r")
 
     print("done")
