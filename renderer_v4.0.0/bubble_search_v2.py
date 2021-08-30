@@ -14,8 +14,8 @@ def find_farthest_id(center, triangle_bubbles):
     biggest_dist = None
     for tri_id, tri in enumerate(triangle_bubbles):
         tri_centroid = tri[0]
-        tri_radius = tri[1]
-        dist = vec_tools.points_separation_sq(tri_centroid, center) + tri_radius
+        tri_radius = tri[1]**0.5
+        dist = (vec_tools.points_separation(tri_centroid, center) + tri_radius)**2
 
         if biggest_dist == None or dist > biggest_dist:
             biggest_dist = dist
