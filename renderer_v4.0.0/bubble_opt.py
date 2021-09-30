@@ -133,10 +133,22 @@ def walk_tree(bubble_tree, ray):
 
     # CRM page 64
     OC = vec_tools.sub3(centroid, O)
-    OC_cross_d = vec_tools.cross(OC, d)
-    dist_sq = vec_tools.norm3_sq(OC_cross_d)
 
-    if dist_sq <= radius_squared:
+
+    intersect = False
+    if vec_tools.norm3_sq(OC) <= radius_squared:
+        intersect = True
+
+    elif vec_tools.dot3(d, OC) < 0:
+        return
+
+    else:
+        OC_cross_d = vec_tools.cross(OC, d)
+        dist_sq = vec_tools.norm3_sq(OC_cross_d)
+        if dist_sq <= radius_squared:
+            intersect = True
+
+    if intersect == True:
         potential_intersections = []
         groups = bubble_tree[2]
 
@@ -265,9 +277,8 @@ def main():
             if pix_RGB != None:
                 res_image[pixel_y, pixel_x] = pix_RGB
 
-        if pixel_x % 10 == 0:
-            cv2.imshow("wow", res_image)
-            cv2.waitKey(1)
+        cv2.imshow("wow", res_image)
+        cv2.waitKey(1)
         print(pixel_x, end="\r")
 
     print("done")
