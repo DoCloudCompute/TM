@@ -4,7 +4,7 @@ from bubble_search_v2 import make_tree, find_farthest_val
 import numpy as np
 import cv2
 import time
-from math import acos, asin, atan, degrees
+from math import acos, asin, atan, tan, degrees
 
 """
 Globals
@@ -250,6 +250,10 @@ def main():
     viewer_origin = (0,0,0)
     resolution = (720,720)
 
+    fov_angle = 30
+
+    screen_distance = -1 * (resolution[0]/2) / (tan(fov_angle/2))
+
     # create the image output buffer
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
@@ -267,7 +271,7 @@ def main():
     print("init done")
     startt = time.time()
 
-    screen = make_screen(2330, resolution)
+    screen = make_screen(screen_distance, resolution)
 
     for pixel_x in range(resolution[0]):
         for pixel_y in range(resolution[1]):
