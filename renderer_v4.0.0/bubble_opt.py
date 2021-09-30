@@ -288,7 +288,7 @@ def main():
     print("done")
     endt = time.time()
 
-    imloc = "outputs/{}.png".format(int(time.time()))
+    imloc = "../outputs/{}.png".format(int(time.time()))
     cv2.imwrite(imloc, res_image)
     cv2.imshow("wow", res_image)
     cv2.waitKey(1)
