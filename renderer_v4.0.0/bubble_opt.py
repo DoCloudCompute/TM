@@ -236,13 +236,13 @@ def main():
     # first define some constants
     # space is in X,Y,Z where X is the front, Y is sideways and Z is vertical
     viewer_origin = (0,0,0)
-    resolution = (720*2,720*2)
+    resolution = (720,720)
 
     # create the image output buffer
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
     triangles_vec = []
-    triangle_vertices = read_stl("STLs/mesh.stl")
+    triangle_vertices = read_stl("STLs/suzanne_1mil_tri.stl")
     triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     triangle_vertices = read_stl("STLs/refl_plane.stl")
@@ -255,7 +255,7 @@ def main():
     print("init done")
     startt = time.time()
 
-    screen = make_screen(2330*2, resolution)
+    screen = make_screen(2330, resolution)
 
     for pixel_x in range(resolution[0]):
         for pixel_y in range(resolution[1]):
@@ -265,8 +265,9 @@ def main():
             if pix_RGB != None:
                 res_image[pixel_y, pixel_x] = pix_RGB
 
-        cv2.imshow("wow", res_image)
-        cv2.waitKey(1)
+        if pixel_x % 10 == 0:
+            cv2.imshow("wow", res_image)
+            cv2.waitKey(1)
         print(pixel_x, end="\r")
 
     print("done")
