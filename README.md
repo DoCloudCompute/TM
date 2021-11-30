@@ -5,7 +5,7 @@
 
 ```numpy``` library from NumPy (used for creating the image buffer)
 
-## Installing required packages:
+### Installing required packages:
 cv2: ```pip3 install opencv-python```
 
 numpy: ```pip3 install numpy```
