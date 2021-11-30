@@ -23,15 +23,15 @@ numpy: ```pip3 install numpy```
 * Has no face occlusion
 
 ## Renderer v3.0.0:
-### ```basic.py```
+### ```basic.py```:
 * Re-write of the whole program, making more extensive use of functions to improve readability and scalability
 * Very slow
 * Implements basic optimizations with the determinants (page 10 of the TM)
 
-### ```HDRI.py```
+### ```HDRI.py```:
 * Same as previous but adds the support for 360° images for envorinnement texture
 
 ## Renderer v4.0.0:
-### ```bubble_opt.py```
+### ```bubble_opt.py```:
 * Big stuff, added big optimizations as described in page 13 of TM
 * The program responsible for building the optimization tree is ```bubble_search_v2.py```
