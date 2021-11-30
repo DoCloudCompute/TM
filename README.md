@@ -1,5 +1,13 @@
 # Welcome to my triangle raytracing renderer
 
+## Requirements:
+```cv2``` library from OpenCV (used for saving and displaying images)
+```numpy``` library from NumPy (used for creating the image buffer)
+
+## Installing required packages:
+cv2: ```pip3 install opencv-python```
+numpy: ```pip3 install numpy```
+
 ## Renderer v0.1.0 features:
 * Triangle-ray intersection calculation
 * Baseline
