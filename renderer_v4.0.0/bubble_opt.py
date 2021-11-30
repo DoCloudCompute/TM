@@ -250,15 +250,13 @@ def main():
     viewer_origin = (0,0,0)
     resolution = (720,720)
 
-    fov_angle = 30
-
-    screen_distance = -1 * (resolution[0]/2) / (tan(fov_angle/2))
+    screen_distance = 2330
 
     # create the image output buffer
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
     triangles_vec = []
-    triangle_vertices = read_stl("STLs/suzanne_1mil_tri.stl")
+    triangle_vertices = read_stl("STLs/suzanne_hi.stl")
     triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     triangle_vertices = read_stl("STLs/refl_plane.stl")

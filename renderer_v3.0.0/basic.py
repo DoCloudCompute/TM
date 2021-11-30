@@ -130,7 +130,7 @@ def main():
     # create the image output buffer
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
-    triangle_vertices = read_stl("STLs/mesh.stl")
+    triangle_vertices = read_stl("STLs/icosphere.stl")
     triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     triangle_vertices = read_stl("STLs/refl_plane.stl")
