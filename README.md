@@ -24,6 +24,7 @@ numpy: ```pip3 install numpy```
 ## Renderer v3.0.0:
 ### ```basic.py```:
 * Re-write of the whole program, making more extensive use of functions to improve readability and scalability
+* Reflections!
 * Very slow
 * Implements basic optimizations with the determinants (page 10 of the TM)
 
