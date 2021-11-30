@@ -20,7 +20,6 @@ numpy: ```pip3 install numpy```
 * Does a 2D projection on the screen and then ray traces from the triangle to the ray origin
 * Has some artefacts like little holes in triangles (probably due to the delta U and delta V)
 * Has STL support
-* Has no face occlusion
 
 ## Renderer v3.0.0:
 ### ```basic.py```:
