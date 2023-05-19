@@ -1,6 +1,7 @@
 import vec_tools
 from STL_reader import read_stl
-from bubble_search_v2 import make_tree, find_farthest_val
+from bubble_search_v3 import make_tree
+#from bubble_search_v3 import triangle_wrapper
 import numpy as np
 import cv2
 import time
@@ -11,6 +12,8 @@ Globals
 """
 hdri_img = cv2.imread("HDRIs/carpentry_shop_02_4k.png", 1)
 reflection_count = 0
+walk_call_count = 0
+ray_count = 0
 
 
 # first, define screen, generator for rays
@@ -23,6 +26,8 @@ def make_screen(screen_distance, resolution):
 
 
 def gen_ray(pixel_x, pixel_y, screen, viewer_origin):
+    global ray_count
+    ray_count += 1
 
     # point of intersection
     S = (screen[0][0] + screen[1][0]*pixel_x + screen[2][0]*pixel_y,
@@ -34,32 +39,10 @@ def gen_ray(pixel_x, pixel_y, screen, viewer_origin):
     return viewer_origin, d
 
 
-def gen_triangle_vectors(triangle_vertices, color):
-    # color are BGR (Blue, Green, Red)
-    # transform triangles to triangles_vec (E1 = B - A | E2 = C - A)
-    triangles_vec = []
-    for tri in triangle_vertices:
-        A = tri[0]
-        B = tri[1]
-        C = tri[2]
-
-        centroid = vec_tools.centroid3(A, B, C)
-
-        radius = find_farthest_val([A, B, C], centroid)
-
-        E1 = vec_tools.sub3(B, A)
-        E2 = vec_tools.sub3(C, A)
-
-        normal = vec_tools.cross(E1, E2)
-
-        tri_vec_element = [A, E1, E2, normal, color]
-        tri_bubble = [centroid, radius, tri_vec_element]
-        triangles_vec.append(tri_bubble)
-
-    return triangles_vec
-
-
 def gen_bounce_ray(normal, origin, d):
+    global ray_count
+    ray_count += 1
+
     # https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
     normal = vec_tools.unit3(normal)
     d_dot_n = vec_tools.dot3(d, normal)
@@ -116,6 +99,8 @@ def get_HDRI(ray):
 
 
 def walk_tree(bubble_tree, ray):
+    global walk_call_count
+    walk_call_count += 1
     """
     first check the number of elements in list, if theres 3 of em, its a bubble
     otherwise, its a triangle so return just that
@@ -124,9 +109,8 @@ def walk_tree(bubble_tree, ray):
     if yes, call again for each sub element
     """
 
-    if len(bubble_tree[0]) != 3:
-        triangle = bubble_tree
-        return triangle
+    if len(bubble_tree[2]) == 5:
+        return does_intersect(bubble_tree[2], ray)
 
     O, d = ray
     centroid, radius_squared = bubble_tree[0:2]
@@ -136,95 +120,91 @@ def walk_tree(bubble_tree, ray):
 
 
     intersect = False
-    if vec_tools.norm3_sq(OC) <= radius_squared:
+    if vec_tools.norm3_sq(OC) <= radius_squared:    # case origin in bubble
         intersect = True
 
-    elif vec_tools.dot3(d, OC) < 0:
+    elif vec_tools.dot3(d, OC) < 0:                 # case bubble behind origin
         return
 
-    else:
+    else:                                           # case bubble intersects ray ahead
         OC_cross_d = vec_tools.cross(OC, d)
         dist_sq = vec_tools.norm3_sq(OC_cross_d)
         if dist_sq <= radius_squared:
             intersect = True
 
     if intersect == True:
-        potential_intersections = []
         groups = bubble_tree[2]
 
-        for group in groups:
-            res = walk_tree(group, ray)
-            if res != None:
-                potential_intersections += res
-    else:
-        return
+        '''
+        get bubble group stats and extract dist, put it in dict and sort by dist
+        '''
+        dist_by_id = {}
+        for idx, group in enumerate(groups):
+            centroid, radius = group[0], group[1]
+            OC = vec_tools.sub3(centroid, O)
+            dist_sq = vec_tools.norm3_sq(OC) + radius
 
-    return potential_intersections
+            dist_by_id[idx] = dist_sq
+        dist_sorted_bubbles = dict(sorted(dist_by_id.items(), key=lambda item: item[1]))
+
+        for bubble_idx in dist_sorted_bubbles.keys():
+            res = walk_tree(groups[bubble_idx], ray)
+            if res != None:
+                return res
+
+    return
+
+def does_intersect(triangle, ray):
+    O, d = ray # unpack origin and directing vector
+
+    V, E1, E2, normal, color = triangle
+
+    # backface culling
+    if vec_tools.dot3(d, normal) >= 0: return
+
+    VO = vec_tools.sub3(O, V)
+
+    cross1 = normal
+    neg_d = vec_tools.negative(d)
+    pre_invdet = vec_tools.dot3(d, cross1)
+
+    if abs(pre_invdet) < 1e-8: return
+
+    invdet = -1/pre_invdet
+
+    t = vec_tools.dot3(VO, cross1) * invdet
+    if t < 1e-6: return
+
+    cross2 = vec_tools.cross(VO, neg_d)
+
+    neg_E2 = vec_tools.negative(E2)
+    u = vec_tools.dot3(neg_E2, cross2) * invdet
+    if u > 1 or u < 0: return
+
+    v = vec_tools.dot3(E1, cross2) * invdet
+
+    if u+v <= 1 and u >= 0 and v >= 0:
+        return u, v, triangle, color
+    
+    return
 
 
 def get_intersection(bubble_tree, ray, max_reflection, reflection_depth = 0):
     global reflection_count
 
-    triangles_vec = walk_tree(bubble_tree, ray)
+    intersect = walk_tree(bubble_tree, ray)
 
-    if triangles_vec == None:
-        return get_HDRI(ray)
+    if not intersect: return get_HDRI(ray)
+    else: intersected_u, intersected_v, intersected_tri, color = intersect
 
-    pix_RGB = None # set color
+    pix_RGB = color # set color
 
-    intersected_tri = None
-
-    O, d = ray # unpack origin and directing vector
-
-    # will be used to check for closest triangle
-    smallest_t = None
-
-    for tri in triangles_vec:
-        V, E1, E2, normal, color = tri
-
-        # backface culling
-        if vec_tools.dot3(d, normal) >= 0:
-            continue
-
-        VO = vec_tools.sub3(O, V)
-
-        cross1 = normal
-        neg_d = vec_tools.negative(d)
-        pre_invdet = vec_tools.dot3(d, cross1)
-
-        if abs(pre_invdet) < 1e-8:
-            continue
-
-        invdet = -1/pre_invdet
-
-        t = vec_tools.dot3(VO, cross1) * invdet
-        if t < 1e-6:
-            continue
-
-        if smallest_t == None or t < smallest_t:
-            cross2 = vec_tools.cross(VO, neg_d)
-
-            neg_E2 = vec_tools.negative(E2)
-            u = vec_tools.dot3(neg_E2, cross2) * invdet
-            if u > 1 or u < 0:
-                continue
-
-            v = vec_tools.dot3(E1, cross2) * invdet
-
-            if u+v <= 1 and u >= 0 and v >= 0:
-                smallest_t = t
-                pix_RGB = color
-                intersected_tri = tri
-                intersected_u = u
-                intersected_v = v
-
-    if intersected_tri == None:
-        pix_RGB = get_HDRI(ray)
+    _, d = ray # unpack origin and directing vector
 
     # if the desired trace is not yet complete, keep reflecting
     if reflection_depth < max_reflection and intersected_tri != None:
         # origin of bounce ray
-        V, E1, E2, normal, color = intersected_tri
+        V, E1, E2, normal, _ = intersected_tri
         u = intersected_u
         v = intersected_v
         intersection_coords = (V[0] + E1[0]*u + E2[0]*v,
@@ -250,21 +230,21 @@ def main():
     viewer_origin = (0,0,0)
     resolution = (720,720)
 
+    fov_angle = 30
+
+    screen_distance = -1 * (resolution[0]/2) / (tan(fov_angle/2))
+
     screen_distance = 2330
 
     # create the image output buffer
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
-    triangles_vec = []
-    triangle_vertices = read_stl("STLs/suzanne_hi.stl")
-    triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
+    triangle_vertices = read_stl("STLs/mesh.stl", texture = (0, 0, 255))
+    triangle_vertices += read_stl("STLs/refl_plane.stl", texture = (100, 100, 100))
 
-    triangle_vertices = read_stl("STLs/refl_plane.stl")
-    triangles_vec = triangles_vec + gen_triangle_vectors(triangle_vertices, (100, 100, 100))
+    print("Number of triangles:", len(triangle_vertices))
 
-    print("Number of triangles:", len(triangles_vec))
-
-    bubble_tree = make_tree(triangles_vec)
+    bubble_tree = make_tree(triangle_vertices)
 
     print("init done")
     startt = time.time()
@@ -297,3 +277,5 @@ def main():
 
 TTC = main()
 print("Time to completion: ", TTC)
+
+print('Walk tree call count: {}, call per ray: {}, ray count: {}'.format(walk_call_count, walk_call_count/ray_count, ray_count))

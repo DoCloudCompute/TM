@@ -142,6 +142,7 @@ def get_HDRI(ray):
 
 def walk_tree(bubble_tree, ray):
     global op_count, calls
+    calls += 1
     """
     first check the number of elements in list, if theres 3 of em, its a bubble
     otherwise, its a triangle so return just that
@@ -292,17 +293,18 @@ def main():
     # first define some constants
     # space is in X,Y,Z where X is the front, Y is sideways and Z is vertical
     viewer_origin = (0,0,0)
-    resolution = (1920,1080)
+    resolution = (720,720)
 
     fov_angle = 30
 
     screen_distance = -1 * (resolution[0]/2) / (tan(fov_angle/2))
+    screen_distance = 2330
 
     # create the image output buffer
     res_image = np.zeros((resolution[1], resolution[0], 3), dtype=np.uint8)
 
     triangles_vec = []
-    triangle_vertices = read_stl("STLs/suzanne_1mil_tri.stl")
+    triangle_vertices = read_stl("STLs/mesh.stl")
     triangles_vec = gen_triangle_vectors(triangle_vertices, (0, 0, 255))
 
     triangle_vertices = read_stl("STLs/refl_plane.stl")

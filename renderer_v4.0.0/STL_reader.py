@@ -1,6 +1,6 @@
 import struct
 
-def read_stl(fname):
+def read_stl(fname, texture = (0,0,0)):
     triangles = []
 
     stl = open(fname, "rb")
@@ -31,7 +31,7 @@ def read_stl(fname):
              stl_vals[10],
              stl_vals[11])
 
-        tri_verts = [A, B, C, normal]
+        tri_verts = [A, B, C, normal, texture]
         triangles.append(tri_verts)
         stl.read(2)
     return triangles

@@ -85,6 +85,11 @@ def centroid3(a, b, c):
             (a[1] + b[1] + c[1]) / 3,
             (a[2] + b[2] + c[2]) / 3)
 
+def centroid2(a, b):
+    return ((a[0] + b[0]) / 2,
+            (a[1] + b[1]) / 2,
+            (a[2] + b[2]) / 2)
+
 def mixRGB(a, b, f=0.5):
     # fix f between 0 and 1
     f = min([1, f])
